@@ -1,2 +1,0 @@
-     10650000000 fs - default              -    INFO - Success: Timer finished correctly
-simulation stopped @10650ns with status 0
