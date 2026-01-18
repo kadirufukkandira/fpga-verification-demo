@@ -85,4 +85,28 @@ begin
         end if; 
     end process;
 
+-- Formal Verification (PSL)
+-- psl default clock is rising_edge(clk_i);
+
+-- Reset behavior: output high, counter zero
+-- psl assert always (rst_i = '1' -> next(done_o = '1' and counter = 0));
+
+-- Idle state: output stays high if not starting
+-- psl assert always (state = IDLE and start_i = '0' -> done_o = '1');
+
+-- Start transition: if starting, output goes low next cycle
+-- psl assert always (state = IDLE and start_i = '1' -> next(done_o = '0'));
+
+-- Counting state: output must remain low
+-- psl assert always (state = COUNTING -> done_o = '0');
+
+-- Cycle check: counter must increment exactly by 1
+-- psl assert always (state = COUNTING and counter < c_target_cycles -> next(counter) = counter + 1);
+
+-- Completion: output goes high when target reached
+-- psl assert always (counter = c_target_cycles -> next(done_o = '1'));
+
+-- eventually finishes
+-- psl assert always (start_i = '1' -> eventually! done_o = '1');	
+
 end architecture;
