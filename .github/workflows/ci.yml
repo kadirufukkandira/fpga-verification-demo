@@ -8,19 +8,17 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04     # use stable linux version
+    runs-on: ubuntu-22.04      # use stable linux version
+    container: ghdl/ghdl:mcode-latest # use docker image with ghdl pre-installed
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4  # get my files
-      
-      # install ghdl from linux package manager to avoid 404 errors
-      - name: Install GHDL (Native)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ghdl
 
       - name: Install VUnit
-        run: pip install vunit # install python lib
+        run: |
+          apt-get update -y && apt-get install -y python3-pip # need pip to install vunit
+          pip3 install vunit_hdl --break-system-packages      # install vunit lib
 
       - name: Run VUnit Tests
-        run: python run.py -v  # fire the tests
+        run: python3 run.py -v     # fire the tests
