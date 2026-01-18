@@ -1,0 +1,14 @@
+name: FPGA Timer Verification CI
+
+on:
+  push:
+    branches: [ main, task* ]  # runs on main and any task branch
+  pull_request:
+    branches: [ main ]         # check pull request too
+
+jobs:
+  test:
+    runs-on: ubuntu-latest     # use linux vm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # get my files
