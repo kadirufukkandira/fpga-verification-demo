@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest     # use linux vm
+    runs-on: ubuntu-22.04     # use stable linux version
     steps:
       - name: Checkout code
         uses: actions/checkout@v4  # get my files
