@@ -8,17 +8,18 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04      # use stable linux version
-    container: ghdl/ghdl:mcode-latest # use docker image with ghdl pre-installed
+    runs-on: ubuntu-latest
+    container: ghdl/ghdl:bullseye-mcode # use stable image, prev one failed
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # get my files
+        uses: actions/checkout@v4
 
-      - name: Install VUnit
+      - name: Install Dependencies
         run: |
-          apt-get update -y && apt-get install -y python3-pip # need pip to install vunit
-          pip3 install vunit_hdl --break-system-packages      # install vunit lib
+          apt-get update -q
+          apt-get install -y python3-pip git # need pip for vunit
+          pip3 install vunit_hdl             # install lib
 
       - name: Run VUnit Tests
         run: python3 run.py -v     # fire the tests
