@@ -12,3 +12,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4  # get my files
+      
+      - name: Setup GHDL
+        uses: ghdl/setup-ghdl-ci@v1 # install ghdl tool
+        with:
+          backend: mcode       # use mcode backend like local
+
+      - name: Install VUnit
+        run: pip install vunit # install python lib
+
+      - name: Run VUnit Tests
+        run: python run.py -v  # fire the tests
