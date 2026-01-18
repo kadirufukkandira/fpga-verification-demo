@@ -13,10 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4  # get my files
       
-      - name: Setup GHDL
-        uses: ghdl/setup-ghdl-ci@nightly # use diffrent version
-        with:
-          backend: mcode       # use mcode backend like local
+      # install ghdl from linux package manager to avoid 404 errors
+      - name: Install GHDL (Native)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ghdl
 
       - name: Install VUnit
         run: pip install vunit # install python lib
