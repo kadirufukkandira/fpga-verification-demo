@@ -24,6 +24,7 @@ The `timer` entity is designed for reliability and ease of integration:
 ## Local Development & Verification
 
 Follow these steps to set up the environment and run tests on your local machine.
+
 ### 1. Prerequisites & Installation
 
 Follow the steps below based on your operating system. You can either use the provided command-line instructions or download the installers from the official links.
@@ -36,8 +37,7 @@ Python is required to run the VUnit framework.
   ```powershell
   winget install Python.Python.3
   # Note: During installation, check "Add Python to PATH" if installing manually.
-
-```
+  ```
 
 * **Linux (Ubuntu/Debian):**
 ```bash
@@ -80,42 +80,49 @@ sudo apt install ghdl
 ```
 
 #### D. Install OSS CAD Suite (For Formal Verification)
+
 Required for running `sby` (SymbiYosys). This is a portable package (no installer).
 
 * **Official Download:** [github.com/YosysHQ/oss-cad-suite-build/releases](https://github.com/YosysHQ/oss-cad-suite-build/releases)
 * **Windows:**
-  1. Download the `windows-x64` zip file and extract it (e.g., to `C:\oss-cad-suite`).
-  2. Run this PowerShell command to add it to your PATH permanently:
-     ```powershell
-     # CHANGE the path below to where you actually extracted the folder!
-     $targetPath = "C:\oss-cad-suite\bin"
-     
-     [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";$targetPath", "User")
-     ```
-     *(Restart PowerShell after running this.)*
-* **Linux:**
-  ```bash
-  # Download (Example filename, check link for latest)
-  wget [https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-01-20/oss-cad-suite-linux-x64-20240120.tgz](https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-01-20/oss-cad-suite-linux-x64-20240120.tgz)
-  tar -xvf oss-cad-suite-linux-x64-*.tgz
-  
-  # Add to PATH (Temporary)
-  export PATH=$PWD/oss-cad-suite/bin:$PATH
-  ```
+1. Download the `windows-x64` zip file and extract it to `C:\oss-cad-suite`.
+2. **Add to PATH manually:**
+* Search Windows for **"Edit the system environment variables"**.
+* Click **"Environment Variables"**.
+* Under "User variables", find **Path** and click **Edit**.
+* Click **New** and paste: `C:\oss-cad-suite\bin`
+* Click OK on all windows.
 
+
+
+
+* **Linux:**
+```bash
+# Download (Example filename, check link for latest)
+wget https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-01-20/oss-cad-suite-linux-x64-20240120.tgz
+tar -xvf oss-cad-suite-linux-x64-*.tgz
+
+# Add to PATH (Temporary)
+export PATH=$PWD/oss-cad-suite/bin:$PATH
+
+```
 ### 2. Running VUnit Simulations
 
 We use VUnit to manage test benches and simulate various frequency/delay scenarios automatically.
 
 To run the full simulation suite:
 
-```bash
+* **Windows:**
+```powershell
 python run.py -v
 
 ```
-or
+
+
+* **Linux / macOS:**
 ```bash
 python3 run.py -v
+
 ```
 
 * **-v (verbose):** Displays detailed output of passing/failing tests in the terminal.
