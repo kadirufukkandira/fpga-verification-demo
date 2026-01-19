@@ -6,26 +6,24 @@ on:
   pull_request:
     branches: [ main ]         # check pull request too
 
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    # Container removed: using 'setup-oss-cad-suite'
+    # Image with all requirements > GHDL, Yosys ve SBY
+    container: gcr.io/hdl-containers/impl:latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Tools
-        uses: YosysHQ/setup-oss-cad-suite@v3 # installs GHDL, Yosys, SBY
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install Dependencies
+      - name: Install Python Libs
+        # VUnit
         run: |
-          pip3 install vunit_hdl               # install lib
+          pip3 install vunit_hdl --break-system-packages
 
       - name: Run VUnit Tests
-        run: python3 run.py -v     # fire the tests
+        run: python3 run.py -v      # fire the tests
 
       - name: Run Formal Verification
-        run: sby -f timer.sby      # run formal proof
+        run: sby -f timer.sby           # run formal proof
