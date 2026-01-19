@@ -6,7 +6,10 @@ depth 20
 smtbmc
 
 [script]
-# Compile VHDL-2008
+# FIX: Load GHDL plugin so Yosys can understand VHDL
+plugin -i ghdl
+
+# Compile VHDL using GHDL
 # Override generics: 1kHz & 5ms = 5 cycles for fast proof
 ghdl --std=08 -gclk_freq_hz_g=1000 -gdelay_g=5ms src/timer.vhd -e timer
 
