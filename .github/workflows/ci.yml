@@ -38,7 +38,7 @@ jobs:
         run: sby -f timer.sby
         continue-on-error: true
 
-      # Generate custom SBY XML for the combined report
+      # Generate SBY XML
       - name: Generate SBY XML Report
         if: always()
         run: |
@@ -53,48 +53,63 @@ jobs:
           cat <<EOF > sby_results.xml
           <?xml version="1.0" encoding="UTF-8"?>
           <testsuite name="Formal Verification" tests="1" failures="$FAILURES" skipped="0" time="1.0">
-            <testcase classname="SBY.Formal" name="Property_Proof_10ms_Target" time="1.0">
+            <testcase classname="SBY.Formal" name="Mathematical_Proof_Check" time="1.0">
               $FAILURE_BLOCK
             </testcase>
           </testsuite>
           EOF
 
-      # Publish combined table
-      - name: Publish Test Report
-        id: test-report
+      # --- SEPARATE REPORTING STEPS ---
+
+      # 1. Publish ONLY VUnit Results
+      - name: Publish VUnit Report
+        id: vunit-report
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: Verification Results Table
-          path: '*.xml'
+          name: VUnit Simulation Results
+          path: 'test_results.xml'     # Only reads VUnit XML
           reporter: java-junit
 
-      # Fail job if SBY failed
+      # 2. Publish ONLY SBY Results
+      - name: Publish SBY Report
+        id: sby-report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Formal Verification Results
+          path: 'sby_results.xml'      # Only reads SBY XML
+          reporter: java-junit
+
+      # Fail if SBY failed
       - name: Check SBY Status
         if: steps.sby_step.outcome == 'failure'
         run: exit 1
 
-      # Generate Summary
+      # Generate Summary with Separate Links
       - name: Create Full Test Summary
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Fetch URLs
-          REPORT_URL=$(gh api /repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs --jq '.check_runs[] | select(.name=="Verification Results Table") | .html_url' | head -n 1)
+          # Fetch URL for VUnit Table
+          VUNIT_URL=$(gh api /repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs --jq '.check_runs[] | select(.name=="VUnit Simulation Results") | .html_url' | head -n 1)
+          
+          # Fetch URL for Formal Table
+          FORMAL_URL=$(gh api /repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs --jq '.check_runs[] | select(.name=="Formal Verification Results") | .html_url' | head -n 1)
+          
+          # Fallback to job url if missing
           JOB_URL=$(gh run view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name=="test") | .url')
-          if [ -z "$REPORT_URL" ]; then REPORT_URL="$JOB_URL"; fi
+          if [ -z "$VUNIT_URL" ]; then VUNIT_URL="$JOB_URL"; fi
+          if [ -z "$FORMAL_URL" ]; then FORMAL_URL="$JOB_URL"; fi
 
-          # Logic for VUnit Badge (Green if all passed)
-          V_PASSED=${{ steps.test-report.outputs.passed }}
-          V_FAILED=${{ steps.test-report.outputs.failed }}
-          if [ "$V_FAILED" -eq "0" ] && [ "$V_PASSED" -gt "0" ]; then
+          # Badge Logic
+          if [ "${{ steps.vunit-report.outputs.failed }}" -eq "0" ] && [ "${{ steps.vunit-report.outputs.passed }}" -gt "0" ]; then
             V_BADGE="passing-success"
           else
             V_BADGE="failing-critical"
           fi
 
-          # Logic for SBY Badge
           if [ "${{ steps.sby_step.outcome }}" == "success" ]; then
              S_BADGE="passing-success"
           else
@@ -104,19 +119,14 @@ jobs:
           echo "# FPGA Verification Dashboard" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Badges with distinct links
-          echo "[![VUnit](https://img.shields.io/badge/VUnit_Simulation-$V_BADGE?style=for-the-badge&logo=python)]($REPORT_URL) " >> $GITHUB_STEP_SUMMARY
-          echo "[![SBY](https://img.shields.io/badge/Formal_Verification-$S_BADGE?style=for-the-badge&logo=formal-verification)]($JOB_URL)" >> $GITHUB_STEP_SUMMARY
+          # Buttons linking to SEPARATE tables
+          echo "[![VUnit](https://img.shields.io/badge/VUnit_Simulation-$V_BADGE?style=for-the-badge&logo=python)]($VUNIT_URL) " >> $GITHUB_STEP_SUMMARY
+          echo "[![SBY](https://img.shields.io/badge/Formal_Verification-$S_BADGE?style=for-the-badge&logo=formal-verification)]($FORMAL_URL)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
 
-          echo "### Test Coverage Overview" >> $GITHUB_STEP_SUMMARY
-          echo "| Scope | Configuration | What is Verified? |" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Scope Explanation" >> $GITHUB_STEP_SUMMARY
+          echo "| Verification Type | Test Count | Description |" >> $GITHUB_STEP_SUMMARY
           echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
-          echo "| **VUnit Simulation** | 10MHz & 100MHz | Verifies that the timer counts the exact correct duration (e.g., 100ms, 1000ms) across different clock frequencies. |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Formal Verification** | 1000Hz / 10ms | Mathematically proves safety (timer never exceeds limit) and liveness (timer eventually finishes) using bounded model checking. |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "### Detailed Status" >> $GITHUB_STEP_SUMMARY
-          echo "**VUnit:** Executed 4 distinct test cases covering low and high frequency ranges." >> $GITHUB_STEP_SUMMARY
-          echo "**Formal:** Performed a k-induction proof with a depth of 200 steps to guarantee logic stability." >> $GITHUB_STEP_SUMMARY
+          echo "| **VUnit Simulation** | **4 Tests** | Runs 4 specific scenarios (Low/High Frequencies). Checks if the timer counts correctly in these specific cases. |" >> $GITHUB_STEP_SUMMARY
+          
