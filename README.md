@@ -24,22 +24,84 @@ The `timer` entity is designed for reliability and ease of integration:
 ## Local Development & Verification
 
 Follow these steps to set up the environment and run tests on your local machine.
-
 ### 1. Prerequisites & Installation
 
-You need the following tools installed on your system:
+Follow the steps below based on your operating system. You can either use the provided command-line instructions or download the installers from the official links.
 
-* **Python 3.x:** Required for the VUnit test runner.
-    ```bash
-    pip3 install vunit_hdl
-    ```
-* **GHDL:** An open-source VHDL simulator.
-    * *Linux:* `sudo apt install ghdl` or via package manager.
-    * *Windows:* Download the installer from the [GHDL GitHub Releases](https://github.com/ghdl/ghdl).
-* **OSS CAD Suite (Required for Formal Verification):**
-    * This suite includes SymbiYosys (sby) and Yosys.
-    * Download from [YosysHQ/oss-cad-suite-build](https://github.com/YosysHQ/oss-cad-suite-build/releases).
-    * *Note:* Ensure the `bin` folder of the CAD suite is added to your system's PATH.
+#### A. Install Python 3.x
+Python is required to run the VUnit framework.
+
+* **Official Download:** [python.org/downloads](https://www.python.org/downloads/)
+* **Windows (PowerShell):**
+  ```powershell
+  winget install Python.Python.3
+  # Note: During installation, check "Add Python to PATH" if installing manually.
+
+```
+
+* **Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install python3 python3-pip
+
+```
+
+#### B. Install VUnit HDL
+
+Once Python is installed, install the VUnit library using pip.
+
+* **Official Documentation:** [vunit.github.io](https://vunit.github.io/)
+* **Windows:**
+```powershell
+python -m pip install vunit_hdl
+
+```
+* **Linux:**
+```bash
+pip3 install vunit_hdl
+
+```
+
+#### C. Install GHDL (Simulator)
+
+GHDL compiles and simulates the VHDL code.
+
+* **Official Download:** [github.com/ghdl/ghdl/releases](https://github.com/ghdl/ghdl/releases)
+* **Windows:**
+1. Download the latest installer (e.g., `ghdl-0.37-mingw32-mcode.exe`) from the link above.
+2. Run the installer and follow the instructions.
+
+
+* **Linux:**
+```bash
+sudo apt install ghdl
+# Or build from source if a newer version is needed.
+
+```
+
+#### D. Install OSS CAD Suite (For Formal Verification)
+Required for running `sby` (SymbiYosys). This is a portable package (no installer).
+
+* **Official Download:** [github.com/YosysHQ/oss-cad-suite-build/releases](https://github.com/YosysHQ/oss-cad-suite-build/releases)
+* **Windows:**
+  1. Download the `windows-x64` zip file and extract it (e.g., to `C:\oss-cad-suite`).
+  2. Run this PowerShell command to add it to your PATH permanently:
+     ```powershell
+     # CHANGE the path below to where you actually extracted the folder!
+     $targetPath = "C:\oss-cad-suite\bin"
+     
+     [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";$targetPath", "User")
+     ```
+     *(Restart PowerShell after running this.)*
+* **Linux:**
+  ```bash
+  # Download (Example filename, check link for latest)
+  wget [https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-01-20/oss-cad-suite-linux-x64-20240120.tgz](https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-01-20/oss-cad-suite-linux-x64-20240120.tgz)
+  tar -xvf oss-cad-suite-linux-x64-*.tgz
+  
+  # Add to PATH (Temporary)
+  export PATH=$PWD/oss-cad-suite/bin:$PATH
+  ```
 
 ### 2. Running VUnit Simulations
 
@@ -50,6 +112,10 @@ To run the full simulation suite:
 ```bash
 python run.py -v
 
+```
+or
+```bash
+python3 run.py -v
 ```
 
 * **-v (verbose):** Displays detailed output of passing/failing tests in the terminal.
@@ -90,5 +156,12 @@ sby -f timer.sby
 └── timer.sby                 # SymbiYosys Formal Verification Config
 
 ```
+
+
+
+
+
+
+
 
 
