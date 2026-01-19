@@ -4,25 +4,22 @@
 
 ## Project Overview & Goals
 
-This project, designed by **Kadir Ufuk Kandira**, demonstrates a complete, professional FPGA engineering workflow. It bridges the gap between clean RTL design and modern verification methodologies.
+This project, designed by **Kadir Ufuk Kandira**, demonstrates a professional FPGA engineering workflow built around a parametric timer module.
 
-The core of the repository is a **Parametric Timer Module**, developed to illustrate the following engineering pillars:
-
-* **RTL Design:** Clean, synthesis-ready VHDL code with high configurability.
-* **Advanced Simulation:** Python-based automated verification using the **VUnit** framework.
-* **Formal Verification:** Mathematical proofs ensuring correctness using **SymbiYosys (SBY)**.
-* **Continuous Integration:** A fully automated testing pipeline via **GitHub Actions** that runs both simulation and formal proofs on every push.
+-> Clean and synthesis ready VHDL design following industry conventions
+-> Automated and self checking simulation using the VUnit framework
+-> Formal verification of timer behavior using SymbiYosys and PSL properties
+-> Continuous integration with GitHub Actions running on every push
 
 ### Technical Highlights
 
 The `timer` entity is designed for reliability and ease of integration:
 
-* **Parametric Precision:** The module internally calculates the target cycle count based on the input clock frequency (`clk_freq_hz_g`) and the desired delay generic (`delay_g`).
-* **Robust Control Logic:**
-    * Initiates counting on a `start_i` pulse.
-    * **Input Protection:** Safely ignores start triggers if the timer is already busy counting.
-    * **Status Reporting:** The `done_o` signal acts as a "Ready/Idle" indicator, remaining High (`'1'`) whenever the timer is not busy.
-* **Synthesis Ready:** The design is fully synchronous (supporting synchronous reset) and is ready for physical FPGA deployment by simply mapping the ports and adjusting the generics.
+-> The module internally calculates the target cycle count based on the input clock frequency (`clk_freq_hz_g`) and the desired delay generic (`delay_g`).
+-> Initiates counting on a `start_i` pulse.
+-> Safely ignores start triggers if the timer is already busy counting.
+-> Status Reporting:The `done_o` signal acts as a "Ready/Idle" indicator, remaining High (`'1'`) whenever the timer is not busy.
+-> The design is fully synchronous (supporting synchronous reset) and is ready for physical FPGA deployment by simply mapping the ports and adjusting the generics.
 
 ## Local Development & Verification
 
@@ -40,7 +37,7 @@ You need the following tools installed on your system:
     * *Linux:* `sudo apt install ghdl` or via package manager.
     * *Windows:* Download the installer from the [GHDL GitHub Releases](https://github.com/ghdl/ghdl).
 * **OSS CAD Suite (Required for Formal Verification):**
-    * This suite includes **SymbiYosys (sby)** and **Yosys**.
+    * This suite includes SymbiYosys (sby) and Yosys.
     * Download from [YosysHQ/oss-cad-suite-build](https://github.com/YosysHQ/oss-cad-suite-build/releases).
     * *Note:* Ensure the `bin` folder of the CAD suite is added to your system's PATH.
 
@@ -71,7 +68,7 @@ sby -f timer.sby
 
 * This reads the `timer.sby` configuration.
 * It uses the properties defined in the PSL (Property Specification Language) within the VHDL code or separate verification units.
-* **Success:** Means the design is proven correct for the specified depth.
+* *Success:* Means the design is proven correct for the specified depth.
 
 ---
 
@@ -94,6 +91,4 @@ sby -f timer.sby
 
 ```
 
-```
 
-```
