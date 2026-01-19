@@ -1,4 +1,3 @@
-```markdown
 # FPGA Verification Demo
 
 [![FPGA Timer Verification CI](https://github.com/kadirufukkandira/fpga-verification-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/kadirufukkandira/fpga-verification-demo/actions/workflows/ci.yml)
