@@ -48,7 +48,7 @@ We use VUnit to manage test benches and simulate various frequency/delay scenari
 To run the full simulation suite:
 
 ```bash
-python3 run.py -v
+python run.py -v
 
 ```
 
