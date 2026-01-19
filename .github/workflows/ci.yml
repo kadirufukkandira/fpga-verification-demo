@@ -2,29 +2,31 @@ name: FPGA Timer Verification CI
 
 on:
   push:
-    branches: [ main, task* ]  # runs on main and any task branch
+    branches: [ main, task* ]
   pull_request:
-    branches: [ main ]         # check pull request too
-
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    # Container removed (gcr.io is locked).
+ 
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup FPGA Tools
-        # Installs GHDL, Yosys, and SBY
+       
         uses: YosysHQ/setup-oss-cad-suite@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Python Libs
-        # VUnit
+
         run: pip3 install vunit_hdl --break-system-packages
+
       - name: Run VUnit Tests
-        run: python3 run.py -v      # fire the tests
+        run: python3 run.py -v
 
       - name: Run Formal Verification
-        run: sby -f timer.sby           # run formal proof
+        run: sby -f timer.sby
