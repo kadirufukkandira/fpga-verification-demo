@@ -16,8 +16,8 @@ use ieee.math_real.all;
 
 entity timer is
     generic (
-        clk_freq_hz_g : natural := 100_000_000; -- Clock frequency in Hz (assigned initial values to prevent initial X states in simulation)
-        delay_g       : time    := 1 ms         -- Delay duration , e.g. , 100 ms
+        clk_freq_hz_g : natural := 1000; -- Clock frequency in Hz (assigned initial values to prevent initial X states in simulation)
+        delay_g       : time    := 5 ms         -- Delay duration , e.g. , 100 ms
     );
     port (
         clk_i   : in  std_ulogic;
