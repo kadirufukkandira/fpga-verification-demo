@@ -1,0 +1,17 @@
+[options]
+mode prove
+depth 20
+
+[engines]
+smtbmc
+
+[script]
+# Compile VHDL-2008
+# Override generics: 1kHz & 5ms = 5 cycles for fast proof
+ghdl --std=08 -gclk_freq_hz_g=1000 -gdelay_g=5ms src/timer.vhd -e timer
+
+# Synthesis setup
+prep -top timer
+
+[files]
+src/timer.vhd
