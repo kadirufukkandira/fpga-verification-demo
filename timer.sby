@@ -17,4 +17,4 @@ ghdl --std=08 -gclk_freq_hz_g=1000 -gdelay_g=5ms timer.vhd -e timer
 prep -top timer
 
 [files]
-timer.vhd=src/timer.vhd
+src/timer.vhd
