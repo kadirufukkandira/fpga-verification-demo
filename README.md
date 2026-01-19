@@ -6,20 +6,20 @@
 
 This project, designed by **Kadir Ufuk Kandira**, demonstrates a professional FPGA engineering workflow built around a parametric timer module.
 
--> Clean and synthesis ready VHDL design following industry conventions
--> Automated and self checking simulation using the VUnit framework
--> Formal verification of timer behavior using SymbiYosys and PSL properties
--> Continuous integration with GitHub Actions running on every push
+- Clean and synthesis ready VHDL design following industry conventions
+- Automated and self checking simulation using the VUnit framework
+- Formal verification of timer behavior using SymbiYosys and PSL properties
+- Continuous integration with GitHub Actions running on every push
 
 ### Technical Highlights
 
 The `timer` entity is designed for reliability and ease of integration:
 
--> The module internally calculates the target cycle count based on the input clock frequency (`clk_freq_hz_g`) and the desired delay generic (`delay_g`).
--> Initiates counting on a `start_i` pulse.
--> Safely ignores start triggers if the timer is already busy counting.
--> Status Reporting:The `done_o` signal acts as a "Ready/Idle" indicator, remaining High (`'1'`) whenever the timer is not busy.
--> The design is fully synchronous (supporting synchronous reset) and is ready for physical FPGA deployment by simply mapping the ports and adjusting the generics.
+- The module internally calculates the target cycle count based on the input clock frequency (`clk_freq_hz_g`) and the desired delay generic (`delay_g`).
+- Initiates counting on a `start_i` pulse.
+- Safely ignores start triggers if the timer is already busy counting.
+- The `done_o` signal acts as a "Ready/Idle" indicator, remaining High (`'1'`) whenever the timer is not busy.
+- The design is fully synchronous (supporting synchronous reset) and is ready for physical FPGA deployment by simply mapping the ports and adjusting the generics.
 
 ## Local Development & Verification
 
