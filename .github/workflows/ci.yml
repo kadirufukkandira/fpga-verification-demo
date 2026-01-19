@@ -53,7 +53,7 @@ jobs:
           cat <<EOF > sby_results.xml
           <?xml version="1.0" encoding="UTF-8"?>
           <testsuite name="Formal Verification" tests="1" failures="$FAILURES" skipped="0" time="1.0">
-            <testcase classname="SBY.Formal" name="Mathematical_Proof_Check" time="1.0">
+            <testcase classname="SBY.Formal" name="Mathematical_Proof_Depth_200" time="1.0">
               $FAILURE_BLOCK
             </testcase>
           </testsuite>
@@ -61,24 +61,24 @@ jobs:
 
       # --- SEPARATE REPORTING STEPS ---
 
-      # 1. Publish ONLY VUnit Results
+      # Publish ONLY VUnit Results
       - name: Publish VUnit Report
         id: vunit-report
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: VUnit Simulation Results
-          path: 'test_results.xml'     # Only reads VUnit XML
+          path: 'test_results.xml'
           reporter: java-junit
 
-      # 2. Publish ONLY SBY Results
+      # Publish ONLY SBY Results
       - name: Publish SBY Report
         id: sby-report
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: Formal Verification Results
-          path: 'sby_results.xml'      # Only reads SBY XML
+          path: 'sby_results.xml'
           reporter: java-junit
 
       # Fail if SBY failed
@@ -86,7 +86,7 @@ jobs:
         if: steps.sby_step.outcome == 'failure'
         run: exit 1
 
-      # Generate Summary with Separate Links
+      # Generate Summary with Tables and Links
       - name: Create Full Test Summary
         if: always()
         env:
@@ -106,27 +106,52 @@ jobs:
           # Badge Logic
           if [ "${{ steps.vunit-report.outputs.failed }}" -eq "0" ] && [ "${{ steps.vunit-report.outputs.passed }}" -gt "0" ]; then
             V_BADGE="passing-success"
+            V_STATUS="PASS"
           else
             V_BADGE="failing-critical"
+            V_STATUS="FAIL"
           fi
 
           if [ "${{ steps.sby_step.outcome }}" == "success" ]; then
              S_BADGE="passing-success"
+             S_STATUS="PASS"
           else
              S_BADGE="failing-critical"
+             S_STATUS="FAIL"
           fi
 
           echo "# FPGA Verification Dashboard" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Buttons linking to SEPARATE tables
+          # Interactive Buttons
           echo "[![VUnit](https://img.shields.io/badge/VUnit_Simulation-$V_BADGE?style=for-the-badge&logo=python)]($VUNIT_URL) " >> $GITHUB_STEP_SUMMARY
           echo "[![SBY](https://img.shields.io/badge/Formal_Verification-$S_BADGE?style=for-the-badge&logo=formal-verification)]($FORMAL_URL)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
 
+          # VUnit Table Generation
+          echo "### VUnit Simulation Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Scenario | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :---: |" >> $GITHUB_STEP_SUMMARY
+          
+          # Extract test names from XML and print row
+          grep "testcase" test_results.xml | while read -r line ; do
+            NAME=$(echo $line | sed -n 's/.*name="\([^"]*\)".*/\1/p')
+            echo "| $NAME | $V_STATUS |" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Formal Table Generation
+          echo "### Formal Verification Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Proof Target | Depth | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :---: |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mathematical_Proof_Depth_200 | 200 Steps | $S_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+
+          # Explanations
           echo "### Test Scope Explanation" >> $GITHUB_STEP_SUMMARY
           echo "| Verification Type | Test Count | Description |" >> $GITHUB_STEP_SUMMARY
           echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
-          echo "| **VUnit Simulation** | **4 Tests** | Runs 4 specific scenarios (Low/High Frequencies). Checks if the timer counts correctly in these specific cases. |" >> $GITHUB_STEP_SUMMARY
-          
+          echo "| **VUnit Simulation** | **4 Tests** | Runs 4 specific scenarios covering Low/High Frequencies. Checks cycle accuracy. |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Formal Verification** | **1 Proof** | Mathematically proves the design logic covers ALL possible states within 200 depth steps. |" >> $GITHUB_STEP_SUMMARY
