@@ -28,17 +28,17 @@ jobs:
       - name: Install Python Libs
         run: pip3 install vunit_hdl --break-system-packages
 
-      # Run VUnit and generate XML report
+      # Run VUnit simulation and generate XML output
       - name: Run VUnit Tests
         run: python3 run.py -v --xunit-xml test_results.xml
 
-      # Run Formal Verification and continue on error to ensure report generation
+      # Run Formal Verification; continue on error to allow reporting
       - name: Run Formal Verification
         id: sby_step
         run: sby -f timer.sby
         continue-on-error: true
 
-      # Generate a manual JUnit XML report for SBY so it appears in the table
+      # Generate custom XML report for SBY to include it in the table
       - name: Generate SBY XML Report
         if: always()
         run: |
@@ -47,10 +47,10 @@ jobs:
             FAILURE_BLOCK=""
           else
             FAILURES="1"
-            FAILURE_BLOCK="<failure message=\"Formal verification failed. Check logs.\">Error Trace Found</failure>"
+            FAILURE_BLOCK="<failure message=\"Formal verification failed.\">Check logs</failure>"
           fi
           
-          # Write XML content
+          # Create the XML file
           cat <<EOF > sby_results.xml
           <?xml version="1.0" encoding="UTF-8"?>
           <testsuite name="Formal Verification" tests="1" failures="$FAILURES" skipped="0" time="1.0">
@@ -60,40 +60,44 @@ jobs:
           </testsuite>
           EOF
 
-      # Process BOTH VUnit and SBY XML reports into one table
-      - name: Publish Combined Test Report
+      # Merge both XML files into a single results table
+      - name: Publish Test Report
         id: test-report
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: Verification Results Table
-          path: '*.xml' # Matches test_results.xml AND sby_results.xml
+          path: '*.xml' # Picks up test_results.xml AND sby_results.xml
           reporter: java-junit
 
-      # Fail the job if SBY failed (since we used continue-on-error above)
+      # Fail the job if SBY step failed
       - name: Check SBY Status
         if: steps.sby_step.outcome == 'failure'
         run: exit 1
 
+      # Generate summary with live status badges
       - name: Create Full Test Summary
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Fetch URL for the Report Table
+          # Fetch report and job URLs
           REPORT_URL=$(gh api /repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs --jq '.check_runs[] | select(.name=="Verification Results Table") | .html_url' | head -n 1)
-          
-          # Fetch URL for the Console Logs
           JOB_URL=$(gh run view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name=="test") | .url')
-          
           if [ -z "$REPORT_URL" ]; then REPORT_URL="$JOB_URL"; fi
 
-          # VUnit Stats
-          VUNIT_PASSED=${{ steps.test-report.outputs.passed }}
-          VUNIT_FAILED=${{ steps.test-report.outputs.failed }}
-          # Note: These outputs now sum up both VUnit and SBY. 
-          # We will just use badge logic based on step outcome for accuracy.
+          # Determine Table Badge Status
+          PASSED=${{ steps.test-report.outputs.passed }}
+          FAILED=${{ steps.test-report.outputs.failed }}
+          if [ "$FAILED" -eq "0" ] && [ "$PASSED" -gt "0" ]; then
+            TABLE_BADGE="passing-success"
+          elif [ "$FAILED" -gt "0" ]; then
+            TABLE_BADGE="failing-critical"
+          else
+            TABLE_BADGE="no_tests-inactive"
+          fi
 
+          # Determine SBY Badge Status
           if [ "${{ steps.sby_step.outcome }}" == "success" ]; then
              SBY_BADGE="passing-success"
              SBY_TEXT="passing"
@@ -105,14 +109,18 @@ jobs:
           echo "# FPGA Verification Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          echo "[![Test Results](https://img.shields.io/badge/Verification_Table-Click_Here-blue?style=for-the-badge&logo=github)]($REPORT_URL) " >> $GITHUB_STEP_SUMMARY
-          echo "[![SBY Logs](https://img.shields.io/badge/Formal_Logs-$SBY_TEXT-$SBY_BADGE?style=for-the-badge&logo=formal-verification)]($JOB_URL)" >> $GITHUB_STEP_SUMMARY
+          # Display status badges
+          echo "[![Verification Results](https://img.shields.io/badge/Test_Results-$TABLE_BADGE?style=for-the-badge&logo=github)]($REPORT_URL) " >> $GITHUB_STEP_SUMMARY
+          echo "[![SBY](https://img.shields.io/badge/Formal_Verification-$SBY_BADGE?style=for-the-badge&logo=formal-verification)]($JOB_URL)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
 
           echo "### Verification Summary" >> $GITHUB_STEP_SUMMARY
-          echo "The Verification Results Table above now includes both Simulation (VUnit) and Formal Verification (SBY) results." >> $GITHUB_STEP_SUMMARY
-          
+          echo "The **Verification Results Table** above now contains results from both:" >> $GITHUB_STEP_SUMMARY
+          echo "- **VUnit Simulation** (4 Tests)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Formal Verification** (1 Proof - Added to table)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
           echo "### Formal Verification Details" >> $GITHUB_STEP_SUMMARY
           if [ "$SBY_TEXT" == "passing" ]; then
             echo "The design logic has been formally verified against PSL assertions." >> $GITHUB_STEP_SUMMARY
