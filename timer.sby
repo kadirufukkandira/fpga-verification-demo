@@ -11,7 +11,7 @@ plugin -i ghdl
 
 # Compile VHDL using GHDL
 # Override generics: 1kHz & 5ms = 5 cycles for fast proof
-ghdl --std=08 -gclk_freq_hz_g=1 timer.vhd -e timer
+ghdl --std=08 -gclk_freq_hz_g=2 timer.vhd -e timer
 
 # Synthesis setup
 prep -top timer
