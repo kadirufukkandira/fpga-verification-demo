@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: ghdl/ghdl:bullseye-mcode # use stable image, prev one failed
+    container: hdlc/ghdl:yosys # updated to include SBY tool
 
     steps:
       - name: Checkout code
