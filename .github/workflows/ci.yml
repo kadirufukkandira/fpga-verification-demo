@@ -10,18 +10,19 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    # Image with all requirements > GHDL, Yosys ve SBY
-    container: gcr.io/hdl-containers/impl:latest
+    # Container removed (gcr.io is locked).
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup FPGA Tools
+        # Installs GHDL, Yosys, and SBY
+        uses: YosysHQ/setup-oss-cad-suite@v3
+
       - name: Install Python Libs
         # VUnit
-        run: |
-          pip3 install vunit_hdl --break-system-packages
-
+        run: pip3 install vunit_hdl --break-system-packages
       - name: Run VUnit Tests
         run: python3 run.py -v      # fire the tests
 
